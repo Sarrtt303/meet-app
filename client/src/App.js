@@ -35,7 +35,7 @@ const App = () => {
             path="/create-meet" 
             element={isAuthenticated ? <CreateMeet tokens={tokens} /> : <OAuthLogin onAuthenticated={handleAuthentication} />} 
           />
-          <Route path="/meet" element="<CreateMeet tokens={tokens} />"/>
+          
         </Routes>
       </div>
     </Router>

@@ -19,7 +19,7 @@ const OAuthCallback = ({ onAuthenticated }) => {
           onAuthenticated(tokens);
         })
         .catch(error => {
-          console.error('Error during OAuth callback:', error);
+          console.error('Error during OAuth callback:', error.response ? error.response.data : error.message);
         });
     }
   }, [location, onAuthenticated]);

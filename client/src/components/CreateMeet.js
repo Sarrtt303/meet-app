@@ -1,21 +1,25 @@
-
-
 import React, { useState } from 'react';
 import axios from 'axios';
 
 const CreateMeet = ({ tokens }) => {
   const [session, setSession] = useState(null);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const createMeet = async () => {
+    setLoading(true);
+    setError(null);
+
     try {
-      setError(null);
+      // Ensure tokens are properly structured and passed
       const response = await axios.post('http://localhost:5000/create-meeting', { tokens });
       setSession(response.data);
       console.log('Meeting created:', response.data);
     } catch (error) {
-      console.error('Error creating meeting:', error);
+      console.error('Error creating meeting:', error.response ? error.response.data : error.message);
       setError('Failed to create meeting. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -24,8 +28,9 @@ const CreateMeet = ({ tokens }) => {
       <button 
         onClick={createMeet}
         className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        disabled={loading} // Disable button while loading
       >
-        Create Google Meet
+        {loading ? 'Creating...' : 'Create Google Meet'}
       </button>
       {error && (
         <p className="text-red-500 mt-2">{error}</p>

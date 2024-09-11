@@ -2,7 +2,13 @@ Setting up the API:
 
 1. Google Cloud Console is used to make a new project and use the Google Calendar API.
 2. Create credentials for yoour API. The Required credentials are: CLIENT ID, CLIENT SECRET, API KEY, ACCESTOKEN and REDIRECT URI. 
-3. 
+3. Initialise an oAuth2Client using the enviornment varaibles created from google cloud console.
+
+const oAuth2Client = new google.auth.OAuth2(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
+  process.env.GOOGLE_REDIRECT_URI
+);
 
 
 

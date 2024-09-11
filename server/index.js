@@ -114,13 +114,20 @@ app.get('/oauth2callback', async (req, res) => {
     // Ensure you have the refreshToken
     if (!tokens.refresh_token) {
       throw new Error('No refresh token received');
+
     }
+    // Ensure tokens are valid
+    if (!tokens) {
+      throw new Error('Token exchange failed');
+    }
+
     
     console.log('Received tokens:', tokens);
 
     // Store tokens in the database
     await storeTokens(tokens);
 
+    console.log('Tokens successfully stored:', tokens);
     res.redirect('http://localhost:3000/create-meet');  // Redirect to frontend after successful auth
   } catch (error) {
     console.error('Error storing tokens:', error);
@@ -148,6 +155,13 @@ app.use(async (req, res, next) => {
 // Create a Google Meet link and calendar event
 app.post('/create-meeting', async (req, res) => {
   try {
+    // Extract tokens and set credentials
+    const { access_token, refresh_token } = req.body.tokens;
+    oAuth2Client.setCredentials({
+      access_token,
+      refresh_token
+    });
+    
     const now = new Date();
     const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
 
