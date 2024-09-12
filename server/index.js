@@ -60,32 +60,33 @@ async function storeTokens(tokens) {
 }
 
 
-// Function to refresh tokens
-async function refreshTokens() {
+const refreshTokens = async (tokenData) => {
   try {
-    console.log('Refreshing tokens...');
-    const { credentials } = await oAuth2Client.refreshAccessToken();
-    console.log('New tokens:', credentials);
+    // Refresh the access token
+    const tokens = await oAuth2Client.refreshAccessToken();
+    const { access_token, refresh_token, expiry_date } = tokens.credentials;
 
-    // Set new credentials
-    oAuth2Client.setCredentials(credentials);
+    // Update the token data in MongoDB
+    tokenData.accessToken = access_token;
+    if (refresh_token) {
+      tokenData.refreshToken = refresh_token; // Only update refresh token if a new one is provided
+    }
+    tokenData.expiryDate = new Date(expiry_date); // Set the new expiry date
+    await tokenData.save();  // Save the updated token document
 
-    // Update token in database
-    await Token.findOneAndUpdate(
-      { accessToken: oAuth2Client.credentials.access_token },
-      {
-        accessToken: credentials.access_token,
-        refreshToken: credentials.refresh_token,
-        expiryDate: new Date(Date.now() + credentials.expires_in * 1000)
-      },
-      { new: true }
-    );
+    // Set the new credentials in OAuth2 client
+    oAuth2Client.setCredentials({
+      access_token: access_token,
+      refresh_token: tokenData.refreshToken
+    });
 
-    console.log('Tokens refreshed successfully');
+    console.log('Tokens refreshed and updated in DB');
   } catch (error) {
-    console.error('Error refreshing tokens:', error);
+    console.error('Failed to refresh tokens:', error);
+    throw new Error('Failed to refresh tokens');
   }
-}
+};
+
 
 
 // Redirect user to Google's OAuth 2.0 consent screen
@@ -138,18 +139,31 @@ app.get('/oauth2callback', async (req, res) => {
 
 // Middleware to refresh tokens when necessary
 app.use(async (req, res, next) => {
-  if (!oAuth2Client.credentials || !oAuth2Client.credentials.access_token) {
+  try {
+    // Fetch tokens from MongoDB
+    const tokenData = await Token.findOne();  // Assuming you're using a single document for tokens
+
+    if (!tokenData || !tokenData.accessToken || !tokenData.refreshToken) {
+      return res.status(401).json({ error: 'No tokens found' });
+    }
+
+    // Set OAuth2 client credentials with access and refresh tokens
     oAuth2Client.setCredentials({
-      access_token: process.env.GOOGLE_ACCESS_TOKEN,
-      refresh_token: process.env.GOOGLE_REFRESH_TOKEN
+      access_token: tokenData.accessToken,
+      refresh_token: tokenData.refreshToken
     });
-  }
 
-  if (oAuth2Client.isTokenExpiring()) {
-    await refreshTokens();
-  }
+    // Check if the access token is expired or about to expire
+    const now = new Date();
+    if (tokenData.expiryDate <= now) {
+      await refreshTokens(tokenData);  // Call the function to refresh and update tokens in the DB
+    }
 
-  next();
+    next();
+  } catch (error) {
+    console.error('Error in token middleware:', error);
+    res.status(500).json({ error: 'Failed to authenticate' });
+  }
 });
 
 // Create a Google Meet link and calendar event
