@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-const CreateMeet = ({ tokens }) => {
+const CreateMeet = () => {
   const [session, setSession] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -11,9 +11,9 @@ const CreateMeet = ({ tokens }) => {
     setError(null);
 
     try {
-      // Ensure tokens are properly structured and passed
-      const response = await axios.post('http://localhost:5000/create-meeting', { tokens });
-      setSession(response.data);
+      // Call backend to create the Google Meet event (no tokens needed in the frontend)
+      const response = await axios.post('http://localhost:5000/create-meeting');
+      setSession(response.data);  // Store the meeting data (like meetingLink, startTime, etc.)
       console.log('Meeting created:', response.data);
     } catch (error) {
       console.error('Error creating meeting:', error.response ? error.response.data : error.message);

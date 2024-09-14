@@ -192,11 +192,15 @@ app.get('/api/check-auth', async (req, res) => {
 // Create a Google Meet link and calendar event
 app.post('/create-meeting', async (req, res) => {
   try {
-    // Extract tokens and set credentials
-    const { access_token, refresh_token } = req.body.tokens;
+    // Fetch tokens from MongoDB (assuming you're using a single document for tokens)
+    const tokenData = await Token.findOne();
+    
+    if (!tokenData || !tokenData.accessToken || !tokenData.refreshToken) {
+      return res.status(401).json({ error: 'No tokens found in the database' });
+    }
     oAuth2Client.setCredentials({
-      access_token,
-      refresh_token
+      access_token: tokenData.accessToken,
+      refresh_token: tokenData.refreshToken
     });
     
     const now = new Date();
