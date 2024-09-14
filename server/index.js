@@ -172,27 +172,14 @@ app.use(async (req, res, next) => {
   }
 });
 
-//Checks if the current session is authenticated using OAuth
+// Check if the current session is authenticated
 app.get('/api/check-auth', async (req, res) => {
   try {
-    res.set('Access-Control-Allow-Origin', 'true');
-    //  we'll check if there's a valid token in the database
+    // The token middleware will already ensure token is valid or refreshed
     const token = await Token.findOne();
-    
+
     if (token && token.accessToken) {
-      // Check if the token is expired
-      if (new Date() < new Date(token.expiryDate)) {
-        res.json({ isAuthenticated: true });
-      } else {
-        // Token is expired, try to refresh it
-        try {
-          await refreshTokens(token);
-          res.json({ isAuthenticated: true });
-        } catch (error) {
-          console.error('Error refreshing token:', error);
-          res.json({ isAuthenticated: false });
-        }
-      }
+      res.json({ isAuthenticated: true });
     } else {
       res.json({ isAuthenticated: false });
     }
