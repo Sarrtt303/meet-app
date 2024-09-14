@@ -19,6 +19,7 @@ connectDB();
 // CORS configuration
 app.use(cors({
   origin: 'http://localhost:3000',
+  credentials: true,
   methods: 'GET,POST,PUT,DELETE',
   allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept, Authorization'
 }));
@@ -101,16 +102,20 @@ app.get('/auth/google', (req, res) => {
     scope: scopes,
     prompt: 'consent',
   });
-
+  console.log('Authorization URL:', authorizationUrl);
   res.redirect(authorizationUrl);
 });
 
 app.get('/oauth2callback', async (req, res) => {
   const { code } = req.query;
+  console.log('Recieved authorization code:', code);
   
   try {
+    console.log('Exchanging tokens...');
     const { tokens } = await oAuth2Client.getToken(code); // Exchange code for tokens
+    console.log('Received tokens:', JSON.stringify(tokens, null, 2));
     oAuth2Client.setCredentials(tokens); // Set credentials
+    
     
     // Ensure you have the refreshToken
     if (!tokens.refresh_token) {
@@ -132,6 +137,7 @@ app.get('/oauth2callback', async (req, res) => {
     res.redirect('http://localhost:3000/create-meet');  // Redirect to frontend after successful auth
   } catch (error) {
     console.error('Error storing tokens:', error);
+    console.error('Error details:', JSON.stringify(error, null, 2));
     res.status(500).send('Authentication failed');
   }
 });
@@ -163,6 +169,36 @@ app.use(async (req, res, next) => {
   } catch (error) {
     console.error('Error in token middleware:', error);
     res.status(500).json({ error: 'Failed to authenticate' });
+  }
+});
+
+//Checks if the current session is authenticated using OAuth
+app.get('/api/check-auth', async (req, res) => {
+  try {
+    res.set('Access-Control-Allow-Origin', 'true');
+    //  we'll check if there's a valid token in the database
+    const token = await Token.findOne();
+    
+    if (token && token.accessToken) {
+      // Check if the token is expired
+      if (new Date() < new Date(token.expiryDate)) {
+        res.json({ isAuthenticated: true });
+      } else {
+        // Token is expired, try to refresh it
+        try {
+          await refreshTokens(token);
+          res.json({ isAuthenticated: true });
+        } catch (error) {
+          console.error('Error refreshing token:', error);
+          res.json({ isAuthenticated: false });
+        }
+      }
+    } else {
+      res.json({ isAuthenticated: false });
+    }
+  } catch (error) {
+    console.error('Error checking auth status:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

@@ -3,8 +3,9 @@ Setting up the API:
 1. Google Cloud Console is used to make a new project and use the Google Calendar API,
    which can create events such as google meet.
 
-2. Create credentials for yoour API. The Required credentials are: CLIENT ID, CLIENT SECRET, API KEY, ACCESTOKEN, REFRESHTOKEN and REDIRECT URI(localhost:3000/oauth2callback). 
-
+2. Create credentials for your API. The Required credentials are: CLIENT ID, CLIENT SECRET, API KEY, ACCESTOKEN, REFRESHTOKEN and REDIRECT URI(Ensure that your
+   Javascript Original URI in the console is your local frontend port, eg: localhost:3000 and your Redirect URI is your backend port with the /oauth2callback enpoint, eg: localhost:5000/oauth2callback). 
+   **All Credentials and API keys should be saved inside a .env file**
 3. Initialise an oAuth2Client using the enviornment varaibles created from google cloud console.
 
 const oAuth2Client = new google.auth.OAuth2(
@@ -53,6 +54,6 @@ for required google api resources. For meet we need the following scopes
  7. Using the Calendar API, a meeting event is created in the /create-meet endpoint, using the access token and refresh token as credentials. 
 
 
- 8. Tailwind CSS is configured into the frontend without postcss and with react integration using, 
+ 8. Tailwind CSS is configured into the frontend (no postcss) and with react integration using, 
      npm install -D tailwindcss
      npx tailwindcss init
