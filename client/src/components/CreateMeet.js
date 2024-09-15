@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import JoinMeet from './JoinMeet';
+
 
 const CreateMeet = () => {
   const [session, setSession] = useState(null);
@@ -24,25 +26,30 @@ const CreateMeet = () => {
   };
 
   return (
-    <div className="p-4">
-      <button 
-        onClick={createMeet}
-        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        disabled={loading} // Disable button while loading
-      >
-        {loading ? 'Creating...' : 'Create Google Meet'}
-      </button>
-      {error && (
-        <p className="text-red-500 mt-2">{error}</p>
-      )}
-      {session && (
-        <div className="mt-4">
-          <p>Meet Link: <a href={session.meetingLink} target="_blank" rel="noreferrer" className="text-blue-500 hover:underline">{session.meetingLink}</a></p>
-          <p>Start Time: {new Date(session.startTime).toLocaleString()}</p>
-          <p>End Time: {new Date(session.endTime).toLocaleString()}</p>
-        </div>
-      )}
+    <div className="flex flex-col items-center justify-center p-4 min-h-screen">
+  <button
+    onClick={createMeet}
+    className="bg-black hover:bg-gray-600 text-white font-bold py-2 px-4 rounded"
+    disabled={loading} // Disable button while loading
+  >
+    {loading ? 'Creating...' : 'Create Google Meet'}
+  </button>
+  
+  {error && (
+    <p className="text-red-500 mt-2">{error}</p>
+  )}
+  
+  {session && (
+    <div className="mt-4 bg-gray-100 p-4 rounded shadow-lg w-full max-w-lg">
+      <p>
+        Meet Link: <a href={session.meetingLink} target="_blank" rel="noreferrer" className="text-gray-800 hover:underline">{session.meetingLink}</a>
+      </p>
+      <p>Start Time: {new Date(session.startTime).toLocaleString()}</p>
+      <p>End Time: {new Date(session.endTime).toLocaleString()}</p>
     </div>
+  )}
+  <JoinMeet/>
+</div>
   );
 };
 

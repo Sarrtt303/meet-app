@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 const Token = require('./models/Token'); // Token model
 const connectDB = require('./db/Db'); // MongoDB connection logic
 const { v4: uuidv4 } = require('uuid');
+const Meeting = require('./models/Meeting'); 
 
 // Load environment variables
 dotenv.config();
@@ -235,6 +236,16 @@ app.post('/create-meeting', async (req, res) => {
       conferenceDataVersion: 1,
     });
 
+     // Meeting created successfully, store in MongoDB
+    const newMeeting = new Meeting({
+      meetingLink: calendarResponse.data.hangoutLink,
+      eventId: calendarResponse.data.id,
+      startTime: now,
+      endTime: oneHourLater
+    });
+
+    await newMeeting.save();
+
     res.json({
       meetingLink: calendarResponse.data.hangoutLink,
       eventId: calendarResponse.data.id,
@@ -246,6 +257,22 @@ app.post('/create-meeting', async (req, res) => {
     res.status(500).json({ error: 'Failed to create meeting' });
   }
 });
+
+app.get('/valid-meetings', async (req, res) => {
+  try {
+    // Get the current date and time
+    const now = new Date();
+
+    // Find all meetings that are still valid (end time is greater than now)
+    const validMeetings = await Meeting.find({ endTime: { $gt: now } });
+
+    res.json(validMeetings);
+  } catch (error) {
+    console.error('Error fetching valid meetings:', error);
+    res.status(500).json({ error: 'Failed to fetch valid meetings' });
+  }
+});
+
 
 // Start the server
 app.listen(port, () => {
