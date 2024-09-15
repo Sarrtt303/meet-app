@@ -32,7 +32,7 @@ const CreateMeet = () => {
     className="bg-black hover:bg-gray-600 text-white font-bold py-2 px-4 rounded"
     disabled={loading} // Disable button while loading
   >
-    {loading ? 'Creating...' : 'Create Google Meet'}
+    {loading ? 'Creating...' : 'Create  Meet'}
   </button>
   
   {error && (

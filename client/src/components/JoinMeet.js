@@ -26,8 +26,8 @@ const JoinMeet = () => {
   if (error) return <div>{error}</div>;
 
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">Join a Meeting</h2>
+    <div className="max-w-md mx-auto p-6 mt-10 bg-gray-100 border border-gray-300 rounded-lg shadow-lg">
+      <h2 className="text-xl font-bold mb-4 text-center">Join a Meeting</h2>
       {meetings.length > 0 ? (
         <ul>
           {meetings.map((meeting) => (
@@ -44,7 +44,7 @@ const JoinMeet = () => {
           ))}
         </ul>
       ) : (
-        <p>No valid meetings available.</p>
+        <p className="text-center">No valid meetings available.</p>
       )}
     </div>
   );

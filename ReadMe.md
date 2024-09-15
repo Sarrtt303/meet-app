@@ -1,3 +1,5 @@
+<video controls src="client/public/demo.mp4" title="Title"></video>
+
 Setting up the API:
 
 1. Google Cloud Console is used to make a new project and use the Google Calendar API,
